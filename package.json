@@ -1,0 +1,25 @@
+{
+  "name": "employee-coordinator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "employeeCoordinator.js",
+  "scripts": {
+    "start": "node employeeCoordinator.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cawleygl/employee-coordinator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cawleygl/employee-coordinator/issues"
+  },
+  "homepage": "https://github.com/cawleygl/employee-coordinator#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^7.3.3",
+    "mysql": "^2.18.1"
+  }
+}
