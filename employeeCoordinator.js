@@ -1,6 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const reference = require('./dbConnect.js')
+const db = require('./dbConnect.js')
 
 // Connect to database
 const connection = mysql.createConnection({
@@ -20,38 +20,115 @@ const initialize = () => {
       message: 'What would you like to do?',
       choices: [
         'View All Employees',
-        'View All Departments',
         'View All Roles',
+        'View All Departments',
         'Add Employees',
-        'Add Departments',
         'Add Roles',
+        'Add Departments',
         'Update Employee Roles',
+        'Exit'
       ],
     })
     .then((answer) => {
-      // based on their answer, either call the bid or the post functions
       if (answer.initialize === 'View All Employees') {
-        reference.viewAllEmployees();
-      } else if (answer.initialize === 'View All Departments') {
-        reference.viewAllDepartments();
+        db.showAllEmployees();
       } else if (answer.initialize === 'View All Roles') {
-        reference.viewAllRoles();
+        db.showAllRoles();
+      } else if (answer.initialize === 'View All Departments') {
+        db.showAllDepartments();
       } else if (answer.initialize === 'Add Employees') {
-        reference.addEmployees();
-      } else if (answer.initialize === 'Add Departments') {
-        reference.addDepartments();
+        chooseEmployee();
       } else if (answer.initialize === 'Add Roles') {
-        reference.addRoles();
+        chooseRole();
+      } else if (answer.initialize === 'Add Departments') {
+        chooseDepartment();
       } else if (answer.initialize === 'Update Employee Roles') {
-        reference.updateEmployeeRoles();
+        db.updateEmployeeRoles();
       } else {
         connection.end();
       }
     });
 };
 
+const chooseEmployee = () => {
+  inquirer
+    .prompt([
+      { name: 'first_name', type: 'input', message: "What is the employee's first name?" },
+      { name: 'last_name', type: 'input', message: "What is the employee's last name?" },
+      { name: 'role', type: 'list', message: "What is the employee's role?", choices: [
+        "A",
+        "B",
+        "C"
+      ] },
+      { name: 'manager', type: 'list', message: "Who is the employee's manager?", choices: [
+          "A",
+          "B",
+          "C"
+        ] },
+      { name: 'again', type: 'confirm', message: "Would you like to add another employee?" },
+    ])
+    .then((answer) => {
+      console.log(`Added ${answer.first_name} ${answer.last_name} to the database.`);
+      console.log(answer.role);
+      console.log(answer.manager);
+
+      if (answer.again) {
+        chooseEmployee();
+      } else {
+        initialize();
+      }
+
+    });
+};
+
+const chooseRole = () => {
+  inquirer
+    .prompt([
+      { name: 'title', type: 'input', message: "What is the title of the role?" },
+      { name: 'salary', type: 'input', message: "What salary will the role recieve?" },
+      { name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: [
+        "A",
+        "B",
+        "C"
+      ] },
+      { name: 'again', type: 'confirm', message: "Would you like to add another role?" },
+    ])
+    .then((answer) => {
+      console.log(`Added Role: ${answer.title} to the database.`);
+      console.log(answer.salary);
+      console.log(answer.department);
+
+      if (answer.again) {
+        chooseRole();
+      } else {
+        initialize();
+      }
+
+    });
+
+};
+
+const chooseDepartment = () => {
+  inquirer
+    .prompt([
+      { name: 'dept', type: 'input', message: "What is the department's name?" },
+      { name: 'again', type: 'confirm', message: "Would you like to add another department?" },
+    ])
+    .then((answer) => {
+      console.log(`Added Department: ${answer.dept} to the database.`);
+
+      if (answer.again) {
+        chooseDepartment(); 
+      } else {
+        initialize();
+      }
+
+    });
+
+};
+
 // Connect to the mysql server and sql database
 connection.connect((err) => {
   if (err) throw err;
-  initialize();
+initialize();
 });
