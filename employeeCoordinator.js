@@ -15,12 +15,10 @@ const connection = mysql.createConnection({
 const reinit = () => {
   inquirer
     .prompt({
-      name: 'initialize',
+      name: 'reinit',
       type: 'list',
       message: 'Select to Return',
-      choices: [
-        'Return',
-      ],
+      choices: ['Return'],
     })
     .then(() => {
       initialize();
@@ -39,9 +37,9 @@ const initialize = () => {
         'View All Employees',
         'View All Roles',
         'View All Departments',
-        'Add Employees',
-        'Add Roles',
-        'Add Departments',
+        'Add an Employee',
+        'Add a Role',
+        'Add a Department',
         'Update Employee Roles',
         'Exit'
       ],
@@ -53,11 +51,11 @@ const initialize = () => {
         db.showAllRoles(reinit);
       } else if (answer.initialize === 'View All Departments') {
         db.showAllDepartments(reinit);
-      } else if (answer.initialize === 'Add Employees') {
+      } else if (answer.initialize === 'Add an Employee') {
         db.getEmployeeInfo(enterEmployee);
-      } else if (answer.initialize === 'Add Roles') {
-        enterRole();
-      } else if (answer.initialize === 'Add Departments') {
+      } else if (answer.initialize === 'Add a Role') {
+        db.getRoleInfo(enterRole);
+      } else if (answer.initialize === 'Add a Department') {
         enterDepartment();
       } else if (answer.initialize === 'Update Employee Roles') {
         db.updateEmployeeRoles();
@@ -66,7 +64,7 @@ const initialize = () => {
       }
     });
 };
-
+// Inquirer prompt for adding employees
 const enterEmployee = (managersArray, rolesArray) => {
   // Take database info and parse out the manager's names and all roles
   const nameArray = [];
@@ -88,17 +86,17 @@ const enterEmployee = (managersArray, rolesArray) => {
       { name: 'manager', type: 'list', message: "Who is the employee's manager? (If applicable)", choices: nameArray },
     ])
     .then((answer) => {
-      // Parse out role id
       let roleID = ""
       let managerID = ""
 
+      // Parse out role id
       for (i of rolesArray) {
         if (i.title === answer.role) {
           roleID = i.id;
         }
       }
 
-      if (answer.manager === "None") {
+      if (answer.manager === "None (Employee is a Manager)") {
         db.addEmployee(answer.first_name, answer.last_name, roleID, null, initialize);
       } else {
         // Parse out manager id
@@ -111,58 +109,44 @@ const enterEmployee = (managersArray, rolesArray) => {
       }
     });
 };
+// Inquirer prompt for adding roles
+const enterRole = (deptArray) => {
+  const deptNameArray = [];
+  for (i of deptArray) {
+    deptNameArray.push(`${i.name}`);
+  }
 
-const enterRole = () => {
   inquirer
     .prompt([
       { name: 'title', type: 'input', message: "What is the title of the role?" },
       { name: 'salary', type: 'input', message: "What salary will the role recieve?" },
-      {
-        name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: [
-          "A",
-          "B",
-          "C"
-        ]
-      },
-      { name: 'again', type: 'confirm', message: "Would you like to add another role?" },
+      { name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: deptNameArray },
     ])
     .then((answer) => {
-      console.log(`Added Role: ${answer.title} to the database.`);
-      console.log(answer.salary);
-      console.log(answer.department);
+      let deptID = ""
 
-      if (answer.again) {
-        enterRole();
-      } else {
-        initialize();
+      // Parse out department id
+      for (i of deptArray) {
+        if (i.name === answer.department) {
+          deptID = i.id
+        }
       }
+
+      db.addRole(answer.title, answer.salary, deptID, initialize);
 
     });
 
 };
-
+// Inquirer prompt for adding departments
 const enterDepartment = () => {
   inquirer
-    .prompt([
-      { name: 'dept', type: 'input', message: "What is the department's name?" },
-      { name: 'again', type: 'confirm', message: "Would you like to add another department?" },
-    ])
+    .prompt([{ name: 'name', type: 'input', message: "What is the department's name?" }])
     .then((answer) => {
-      console.log(`Added Department: ${answer.dept} to the database.`);
-
-      if (answer.again) {
-        enterDepartment();
-      } else {
-        initialize();
-      }
-
+      db.addDepartment(answer.name, initialize);
     });
-
 };
-
 // Connect to the mysql server and sql database
 connection.connect((err) => {
   if (err) throw err;
   initialize();
 });
-
