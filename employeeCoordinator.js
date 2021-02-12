@@ -22,7 +22,7 @@ const reinit = () => {
         'Return',
       ],
     })
-    .then((answer) => {
+    .then(() => {
       initialize();
     });
 };
@@ -54,11 +54,11 @@ const initialize = () => {
       } else if (answer.initialize === 'View All Departments') {
         db.showAllDepartments(reinit);
       } else if (answer.initialize === 'Add Employees') {
-        chooseEmployee();
+        db.getEmployeeInfo(enterEmployee);
       } else if (answer.initialize === 'Add Roles') {
-        chooseRole();
+        enterRole();
       } else if (answer.initialize === 'Add Departments') {
-        chooseDepartment();
+        enterDepartment();
       } else if (answer.initialize === 'Update Employee Roles') {
         db.updateEmployeeRoles();
       } else {
@@ -67,42 +67,52 @@ const initialize = () => {
     });
 };
 
-const chooseEmployee = () => {
+const enterEmployee = (managersArray, rolesArray) => {
+  // Take database info and parse out the manager's names and all roles
+  const nameArray = [];
+  const titleArray = [];
+
+  for (i of managersArray) {
+    nameArray.push(`${i.first_name} ${i.last_name}`);
+  }
+  nameArray.push("None (Employee is a Manager)");
+  for (i of rolesArray) {
+    titleArray.push(`${i.title}`);
+  }
+  // Inquirer prompt to gather info on new employee
   inquirer
     .prompt([
       { name: 'first_name', type: 'input', message: "What is the employee's first name?" },
       { name: 'last_name', type: 'input', message: "What is the employee's last name?" },
-      {
-        name: 'role', type: 'list', message: "What is the employee's role?", choices: [
-          "A",
-          "B",
-          "C"
-        ]
-      },
-      {
-        name: 'manager', type: 'list', message: "Who is the employee's manager?", choices: [
-          "A",
-          "B",
-          "C"
-        ]
-      },
-      { name: 'again', type: 'confirm', message: "Would you like to add another employee?" },
+      { name: 'role', type: 'list', message: "What is the employee's role?", choices: titleArray },
+      { name: 'manager', type: 'list', message: "Who is the employee's manager? (If applicable)", choices: nameArray },
     ])
     .then((answer) => {
-      console.log(`Added ${answer.first_name} ${answer.last_name} to the database.`);
-      console.log(answer.role);
-      console.log(answer.manager);
+      // Parse out role id
+      let roleID = ""
+      let managerID = ""
 
-      if (answer.again) {
-        chooseEmployee();
-      } else {
-        initialize();
+      for (i of rolesArray) {
+        if (i.title === answer.role) {
+          roleID = i.id;
+        }
       }
 
+      if (answer.manager === "None") {
+        db.addEmployee(answer.first_name, answer.last_name, roleID, null, initialize);
+      } else {
+        // Parse out manager id
+        for (i of managersArray) {
+          if (`${i.first_name} ${i.last_name}` === answer.manager) {
+            managerID = i.id
+          }
+        }
+        db.addEmployee(answer.first_name, answer.last_name, roleID, managerID, initialize);
+      }
     });
 };
 
-const chooseRole = () => {
+const enterRole = () => {
   inquirer
     .prompt([
       { name: 'title', type: 'input', message: "What is the title of the role?" },
@@ -122,7 +132,7 @@ const chooseRole = () => {
       console.log(answer.department);
 
       if (answer.again) {
-        chooseRole();
+        enterRole();
       } else {
         initialize();
       }
@@ -131,7 +141,7 @@ const chooseRole = () => {
 
 };
 
-const chooseDepartment = () => {
+const enterDepartment = () => {
   inquirer
     .prompt([
       { name: 'dept', type: 'input', message: "What is the department's name?" },
@@ -141,7 +151,7 @@ const chooseDepartment = () => {
       console.log(`Added Department: ${answer.dept} to the database.`);
 
       if (answer.again) {
-        chooseDepartment();
+        enterDepartment();
       } else {
         initialize();
       }

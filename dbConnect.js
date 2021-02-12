@@ -36,25 +36,50 @@ const showAllRoles = (callback) => {
     });
 }
 
-const addEmployees = () => {
-    console.log('Adding employees...')
+const addEmployee = (first, last, role, manager, callback) => {
+    connection.query(
+        'INSERT INTO employee SET ?',
+        {
+            first_name: first,
+            last_name: last,
+            role_id: role,
+            manager_id: manager,
+        },
+        (err) => {
+            if (err) throw err;
+            console.log(`Added ${first} ${last} to the database.`);
+            callback();
+        }
+    );
 }
-const addDepartments = () => {
+
+const addDepartment = () => {
     console.log('Adding departments...')
 }
-const addRoles = () => {
+const addRole = () => {
     console.log('Adding roles...')
 }
 const updateEmployeeRoles = () => {
     console.log('Updating employee roles...')
 }
 
+const getEmployeeInfo = (callback) => {
+    connection.query('SELECT * FROM employee WHERE manager_id is null', (err, managersArray) => {
+        if (err) throw err;
+        connection.query('SELECT * FROM role', (err, rolesArray) => {
+            if (err) throw err;
+            callback(managersArray, rolesArray);
+        });
+    });
+}
+
 module.exports = {
     showAllEmployees,
     showAllDepartments,
     showAllRoles,
-    addEmployees,
-    addDepartments,
-    addRoles,
+    addEmployee,
+    addDepartment,
+    addRole,
     updateEmployeeRoles,
+    getEmployeeInfo,
 }
