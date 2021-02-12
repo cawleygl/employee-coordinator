@@ -1,5 +1,6 @@
 const cTable = require('console.table');
 const mysql = require('mysql');
+const { join } = require('path');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -10,13 +11,37 @@ const connection = mysql.createConnection({
 });
 // Get data from MySQL to show all employees
 const showAllEmployees = (callback) => {
-    console.log('\nEmployees:\n')
-    connection.query('SELECT * FROM employee', (err, res) => {
+    console.log('\nEmployee:\n');
+    connection.query('SELECT * FROM employee', (err, employeeArray) => {
         if (err) throw err;
-        console.table(res);
-        callback();
+        connection.query('SELECT id, first_name, last_name FROM employee WHERE manager_id is null', (err, managersArray) => {
+            if (err) throw err;
+            connection.query('SELECT id, title FROM role', (err, rolesArray) => {
+                if (err) throw err;
+                // Add manager names and role titles to new keys (replacing id's)
+                for (i of employeeArray) {
+                    for (j of managersArray) {
+                        if (i.manager_id === j.id) {
+                            i.manager = `${j.first_name} ${j.last_name}`;
+                        }
+                    }
+                    delete i.manager_id
+                    for (j of rolesArray) {
+                        if (i.role_id === j.id) {
+                            i.role = j.title;
+                        }
+                    }
+                    delete i.role_id
+                }
+
+                console.table(employeeArray);
+                // console.table(res);
+                // callback();
+            });
+        });
     });
 }
+
 // Get data from MySQL to show all roles
 const showAllRoles = (callback) => {
     console.log('\nRoles:\n');
@@ -37,9 +62,9 @@ const showAllDepartments = (callback) => {
 }
 // Get data about managers and roles to select when adding an employee
 const getEmployeeInfo = (callback) => {
-    connection.query('SELECT * FROM employee WHERE manager_id is null', (err, managersArray) => {
+    connection.query('SELECT id, first_name, last_name FROM employee WHERE manager_id is null', (err, managersArray) => {
         if (err) throw err;
-        connection.query('SELECT * FROM role', (err, rolesArray) => {
+        connection.query('SELECT id, title FROM role', (err, rolesArray) => {
             if (err) throw err;
             callback(managersArray, rolesArray);
         });
