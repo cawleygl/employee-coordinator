@@ -11,6 +11,23 @@ const connection = mysql.createConnection({
   database: 'employee_coordinatorDB',
 });
 
+// Function to return to Initial Prompt
+const reinit = () => {
+  inquirer
+    .prompt({
+      name: 'initialize',
+      type: 'list',
+      message: 'Select to Return',
+      choices: [
+        'Return',
+      ],
+    })
+    .then((answer) => {
+      initialize();
+    });
+};
+
+
 // Initial Prompt
 const initialize = () => {
   inquirer
@@ -31,11 +48,11 @@ const initialize = () => {
     })
     .then((answer) => {
       if (answer.initialize === 'View All Employees') {
-        db.showAllEmployees();
+        db.showAllEmployees(reinit);
       } else if (answer.initialize === 'View All Roles') {
-        db.showAllRoles();
+        db.showAllRoles(reinit);
       } else if (answer.initialize === 'View All Departments') {
-        db.showAllDepartments();
+        db.showAllDepartments(reinit);
       } else if (answer.initialize === 'Add Employees') {
         chooseEmployee();
       } else if (answer.initialize === 'Add Roles') {
@@ -55,16 +72,20 @@ const chooseEmployee = () => {
     .prompt([
       { name: 'first_name', type: 'input', message: "What is the employee's first name?" },
       { name: 'last_name', type: 'input', message: "What is the employee's last name?" },
-      { name: 'role', type: 'list', message: "What is the employee's role?", choices: [
-        "A",
-        "B",
-        "C"
-      ] },
-      { name: 'manager', type: 'list', message: "Who is the employee's manager?", choices: [
+      {
+        name: 'role', type: 'list', message: "What is the employee's role?", choices: [
           "A",
           "B",
           "C"
-        ] },
+        ]
+      },
+      {
+        name: 'manager', type: 'list', message: "Who is the employee's manager?", choices: [
+          "A",
+          "B",
+          "C"
+        ]
+      },
       { name: 'again', type: 'confirm', message: "Would you like to add another employee?" },
     ])
     .then((answer) => {
@@ -86,11 +107,13 @@ const chooseRole = () => {
     .prompt([
       { name: 'title', type: 'input', message: "What is the title of the role?" },
       { name: 'salary', type: 'input', message: "What salary will the role recieve?" },
-      { name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: [
-        "A",
-        "B",
-        "C"
-      ] },
+      {
+        name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: [
+          "A",
+          "B",
+          "C"
+        ]
+      },
       { name: 'again', type: 'confirm', message: "Would you like to add another role?" },
     ])
     .then((answer) => {
@@ -118,7 +141,7 @@ const chooseDepartment = () => {
       console.log(`Added Department: ${answer.dept} to the database.`);
 
       if (answer.again) {
-        chooseDepartment(); 
+        chooseDepartment();
       } else {
         initialize();
       }
@@ -130,5 +153,6 @@ const chooseDepartment = () => {
 // Connect to the mysql server and sql database
 connection.connect((err) => {
   if (err) throw err;
-initialize();
+  initialize();
 });
+
