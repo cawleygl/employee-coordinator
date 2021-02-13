@@ -66,7 +66,7 @@ const initialize = () => {
 };
 // Inquirer prompt for adding employees
 const enterEmployee = (managersArray, rolesArray) => {
-  // Take database info and parse out the manager's names and all roles
+  // Push managers' names and all roles into arrays
   const nameArray = [];
   const titleArray = [];
 

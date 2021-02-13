@@ -33,10 +33,8 @@ const showAllEmployees = (callback) => {
                     }
                     delete i.role_id
                 }
-
                 console.table(employeeArray);
-                // console.table(res);
-                // callback();
+                callback();
             });
         });
     });
