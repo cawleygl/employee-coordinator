@@ -43,10 +43,22 @@ const showAllEmployees = (callback) => {
 // Get data from MySQL to show all roles
 const showAllRoles = (callback) => {
     console.log('\nRoles:\n');
-    connection.query('SELECT * FROM role', (err, res) => {
+    connection.query('SELECT * FROM role', (err, roleArray) => {
         if (err) throw err;
-        console.table(res);
-        callback();
+        connection.query('SELECT * FROM department', (err, deptArray) => {
+            if (err) throw err;
+            // Add department names to new keys (replacing id's)
+            for (i of roleArray) {
+                for (j of deptArray) {
+                    if (i.department_id === j.id) {
+                        i.department = j.name;
+                    }
+                }
+                delete i.department_id
+            }
+            console.table(roleArray);
+            callback();
+        });
     });
 }
 // Get data from MySQL to show all departments
