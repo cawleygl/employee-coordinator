@@ -12,9 +12,9 @@ const connection = mysql.createConnection({
 // Get data from MySQL to show all employees
 const showAllEmployees = (callback) => {
     console.log('\nEmployees:\n');
-    connection.query("SELECT e.id as 'ID', CONCAT(e.first_name, ' ', e.last_name) as 'Name', r.title as 'Title', d.name as 'Department', r.salary as 'Salary', CONCAT(x.first_name, ' ', x.last_name) as 'Manager' FROM employee as e LEFT JOIN role as r ON e.role_id = r.id LEFT JOIN employee as x ON e.manager_id = x.id LEFT JOIN department as d ON r.department_id = d.id", (err, employeeArray) => {
+    connection.query("SELECT e.id as 'ID', CONCAT(e.first_name, ' ', e.last_name) as 'Name', r.title as 'Title', d.name as 'Department', r.salary as 'Salary', CONCAT(x.first_name, ' ', x.last_name) as 'Manager' FROM employee as e LEFT JOIN role as r ON e.role_id = r.id LEFT JOIN employee as x ON e.manager_id = x.id LEFT JOIN department as d ON r.department_id = d.id", (err, res) => {
         if (err) throw err;
-        console.table(employeeArray);
+        console.table(res);
         callback();
     });
 }
@@ -22,9 +22,9 @@ const showAllEmployees = (callback) => {
 // Get data from MySQL to show all roles
 const showAllRoles = (callback) => {
     console.log('\nRoles:\n');
-    connection.query("SELECT r.id as 'ID', r.title as 'Title', r.salary as 'Salary', d.name as 'Department' FROM role as r LEFT JOIN department as d ON r.department_id = d.id", (err, roleArray) => {
+    connection.query("SELECT r.id as 'ID', r.title as 'Title', r.salary as 'Salary', d.name as 'Department' FROM role as r LEFT JOIN department as d ON r.department_id = d.id", (err, res) => {
         if (err) throw err;
-        console.table(roleArray);
+        console.table(res);
         callback();
     });
 }
@@ -39,9 +39,9 @@ const showAllDepartments = (callback) => {
 }
 // Get data about managers and roles to select when adding an employee
 const getEmployeeInfo = (callback) => {
-    connection.query('SELECT id, first_name, last_name FROM employee WHERE manager_id is null', (err, managersArray) => {
+    connection.query("SELECT CONCAT(first_name, ' ', last_name) as 'name', id as 'value' FROM employee WHERE manager_id is null", (err, managersArray) => {
         if (err) throw err;
-        connection.query('SELECT id, title FROM role', (err, rolesArray) => {
+        connection.query("SELECT title as 'name', id as 'value' FROM role", (err, rolesArray) => {
             if (err) throw err;
             callback(managersArray, rolesArray);
         });
@@ -66,7 +66,7 @@ const addEmployee = (first, last, role, manager, callback) => {
 }
 // Get data about departments to select when adding a role
 const getRoleInfo = (callback) => {
-    connection.query('SELECT * FROM department', (err, deptArray) => {
+    connection.query("SELECT name, id as 'value' from department", (err, deptArray) => {
         if (err) throw err;
         callback(deptArray);
     });
@@ -101,16 +101,15 @@ const addDepartment = (name, callback) => {
 }
 
 const getEmployeeUpdate = (callback) => {
-    connection.query('SELECT first_name, last_name FROM employee', (err, employeeArray) => {
+    connection.query("SELECT CONCAT(first_name, ' ', last_name) as 'name', id as 'value' FROM employee", (err, employeesArray) => {
         if (err) throw err;
-        callback(employeeArray);
-    });
-}
-const getRoleUpdate = (callback) => {
-    connection.query('SELECT * FROM role', (err, rolesArray) => {
+    connection.query("SELECT title as 'name', id as 'value' FROM role", (err, rolesArray) => {
         if (err) throw err;
-        callback(rolesArray);
+        console.log(rolesArray);
+        callback(employeesArray, rolesArray);
     });
+});
+
 }
 
 
@@ -123,6 +122,5 @@ module.exports = {
     getRoleInfo,
     addRole,
     addDepartment,
-    getEmployeeUpdate,
-    getRoleUpdate,
+    getEmployeeUpdate
 }

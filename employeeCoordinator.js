@@ -58,7 +58,7 @@ const initialize = () => {
       } else if (answer.initialize === 'Add a Department') {
         enterDepartment();
       } else if (answer.initialize === 'Update Employee Roles') {
-        db.updateEmployeeRoles();
+        db.getEmployeeUpdate(updateEmployeeRoles);
       } else {
         connection.end();
       }
@@ -67,73 +67,29 @@ const initialize = () => {
 // Inquirer prompt for adding employees
 const enterEmployee = (managersArray, rolesArray) => {
   // Push managers' names and all roles into arrays
-  const nameArray = [];
-  const titleArray = [];
-
-  for (i of managersArray) {
-    nameArray.push(`${i.first_name} ${i.last_name}`);
-  }
-  nameArray.push("None (Employee is a Manager)");
-  for (i of rolesArray) {
-    titleArray.push(`${i.title}`);
-  }
+  managersArray.push({ name: "None (Employee is a Manager)", value: null });
   // Inquirer prompt to gather info on new employee
   inquirer
     .prompt([
       { name: 'first_name', type: 'input', message: "What is the employee's first name?" },
       { name: 'last_name', type: 'input', message: "What is the employee's last name?" },
-      { name: 'role', type: 'list', message: "What is the employee's role?", choices: titleArray },
-      { name: 'manager', type: 'list', message: "Who is the employee's manager? (If applicable)", choices: nameArray },
+      { name: 'role', type: 'list', message: "What is the employee's role?", choices: rolesArray },
+      { name: 'manager', type: 'list', message: "Who is the employee's manager? (If applicable)", choices: managersArray },
     ])
     .then((answer) => {
-      let roleID = ""
-      let managerID = ""
-
-      // Parse out role id
-      for (i of rolesArray) {
-        if (i.title === answer.role) {
-          roleID = i.id;
-        }
-      }
-
-      if (answer.manager === "None (Employee is a Manager)") {
-        db.addEmployee(answer.first_name, answer.last_name, roleID, null, initialize);
-      } else {
-        // Parse out manager id
-        for (i of managersArray) {
-          if (`${i.first_name} ${i.last_name}` === answer.manager) {
-            managerID = i.id
-          }
-        }
-        db.addEmployee(answer.first_name, answer.last_name, roleID, managerID, initialize);
-      }
+      db.addEmployee(answer.first_name, answer.last_name, answer.role, answer.manager, initialize);
     });
 };
 // Inquirer prompt for adding roles
 const enterRole = (deptArray) => {
-  const deptNameArray = [];
-  for (i of deptArray) {
-    deptNameArray.push(`${i.name}`);
-  }
-
   inquirer
     .prompt([
       { name: 'title', type: 'input', message: "What is the title of the role?" },
       { name: 'salary', type: 'input', message: "What salary will the role recieve?" },
-      { name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: deptNameArray },
+      { name: 'department', type: 'list', message: "Which department will fulfill this role?", choices: deptArray },
     ])
     .then((answer) => {
-      let deptID = ""
-
-      // Parse out department id
-      for (i of deptArray) {
-        if (i.name === answer.department) {
-          deptID = i.id
-        }
-      }
-
-      db.addRole(answer.title, answer.salary, deptID, initialize);
-
+      db.addRole(answer.title, answer.salary, answer.department, initialize);
     });
 
 };
@@ -145,6 +101,21 @@ const enterDepartment = () => {
       db.addDepartment(answer.name, initialize);
     });
 };
+
+const updateEmployeeRoles = (employeeArray, rolesArray) => {
+
+  inquirer
+    .prompt([
+      { name: 'employee', type: 'list', message: 'Which employee would you like to update?', choices: employeeArray, },
+      { name: 'newRole', type: 'list', message: "What is the employee's new role?", choices: rolesArray, }
+    ])
+    .then((answer) => {
+      console.log(answer.employee)
+      console.log(answer.newRole)
+
+    });
+}
+
 // Connect to the mysql server and sql database
 connection.connect((err) => {
   if (err) throw err;
