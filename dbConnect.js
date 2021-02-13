@@ -11,54 +11,21 @@ const connection = mysql.createConnection({
 });
 // Get data from MySQL to show all employees
 const showAllEmployees = (callback) => {
-    console.log('\nEmployee:\n');
-    connection.query('SELECT * FROM employee', (err, employeeArray) => {
+    console.log('\nEmployees:\n');
+    connection.query("SELECT e.id as 'ID', CONCAT(e.first_name, ' ', e.last_name) as 'Name', r.title as 'Title', d.name as 'Department', r.salary as 'Salary', CONCAT(x.first_name, ' ', x.last_name) as 'Manager' FROM employee as e LEFT JOIN role as r ON e.role_id = r.id LEFT JOIN employee as x ON e.manager_id = x.id LEFT JOIN department as d ON r.department_id = d.id", (err, employeeArray) => {
         if (err) throw err;
-        connection.query('SELECT id, first_name, last_name FROM employee WHERE manager_id is null', (err, managersArray) => {
-            if (err) throw err;
-            connection.query('SELECT id, title FROM role', (err, rolesArray) => {
-                if (err) throw err;
-                // Add manager names and role titles to new keys (replacing id's)
-                for (i of employeeArray) {
-                    for (j of managersArray) {
-                        if (i.manager_id === j.id) {
-                            i.manager = `${j.first_name} ${j.last_name}`;
-                        }
-                    }
-                    delete i.manager_id
-                    for (j of rolesArray) {
-                        if (i.role_id === j.id) {
-                            i.role = j.title;
-                        }
-                    }
-                    delete i.role_id
-                }
-                console.table(employeeArray);
-                callback();
-            });
-        });
+        console.table(employeeArray);
+        callback();
     });
 }
 
 // Get data from MySQL to show all roles
 const showAllRoles = (callback) => {
     console.log('\nRoles:\n');
-    connection.query('SELECT * FROM role', (err, roleArray) => {
+    connection.query("SELECT r.id as 'ID', r.title as 'Title', r.salary as 'Salary', d.name as 'Department' FROM role as r LEFT JOIN department as d ON r.department_id = d.id", (err, roleArray) => {
         if (err) throw err;
-        connection.query('SELECT * FROM department', (err, deptArray) => {
-            if (err) throw err;
-            // Add department names to new keys (replacing id's)
-            for (i of roleArray) {
-                for (j of deptArray) {
-                    if (i.department_id === j.id) {
-                        i.department = j.name;
-                    }
-                }
-                delete i.department_id
-            }
-            console.table(roleArray);
-            callback();
-        });
+        console.table(roleArray);
+        callback();
     });
 }
 // Get data from MySQL to show all departments
@@ -132,9 +99,20 @@ const addDepartment = (name, callback) => {
         }
     );
 }
-const updateEmployeeRoles = () => {
-    console.log('Updating employee roles...')
+
+const getEmployeeUpdate = (callback) => {
+    connection.query('SELECT first_name, last_name FROM employee', (err, employeeArray) => {
+        if (err) throw err;
+        callback(employeeArray);
+    });
 }
+const getRoleUpdate = (callback) => {
+    connection.query('SELECT * FROM role', (err, rolesArray) => {
+        if (err) throw err;
+        callback(rolesArray);
+    });
+}
+
 
 module.exports = {
     showAllEmployees,
@@ -145,5 +123,6 @@ module.exports = {
     getRoleInfo,
     addRole,
     addDepartment,
-    updateEmployeeRoles,
+    getEmployeeUpdate,
+    getRoleUpdate,
 }
