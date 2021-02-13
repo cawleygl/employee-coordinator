@@ -29,7 +29,7 @@ const showAllRoles = (callback) => {
 // Get data from MySQL to show all departments
 const showAllDepartments = (callback) => {
     console.log('\nDepartments:\n');
-    connection.query('SELECT * FROM department', (err, res) => {
+    connection.query("SELECT id as 'ID', name as 'Name' FROM department", (err, res) => {
         if (err) throw err;
         console.table(res);
         callback();
