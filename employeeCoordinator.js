@@ -10,7 +10,6 @@ const connection = mysql.createConnection({
   password: '',
   database: 'employee_coordinatorDB',
 });
-
 // Function to return to Initial Prompt
 const reinit = () => {
   inquirer
@@ -24,8 +23,6 @@ const reinit = () => {
       initialize();
     });
 };
-
-
 // Initial Prompt
 const initialize = () => {
   inquirer
@@ -101,21 +98,17 @@ const enterDepartment = () => {
       db.addDepartment(answer.name, initialize);
     });
 };
-
+// Inquirer prompt for updating roles
 const updateEmployeeRoles = (employeeArray, rolesArray) => {
-
   inquirer
     .prompt([
       { name: 'employee', type: 'list', message: 'Which employee would you like to update?', choices: employeeArray, },
       { name: 'newRole', type: 'list', message: "What is the employee's new role?", choices: rolesArray, }
     ])
     .then((answer) => {
-      console.log(answer.employee)
-      console.log(answer.newRole)
-
+      db.changeRole(answer.employee, answer.newRole, initialize)
     });
 }
-
 // Connect to the mysql server and sql database
 connection.connect((err) => {
   if (err) throw err;

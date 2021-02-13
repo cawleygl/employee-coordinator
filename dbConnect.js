@@ -1,6 +1,5 @@
 const cTable = require('console.table');
 const mysql = require('mysql');
-const { join } = require('path');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -18,7 +17,6 @@ const showAllEmployees = (callback) => {
         callback();
     });
 }
-
 // Get data from MySQL to show all roles
 const showAllRoles = (callback) => {
     console.log('\nRoles:\n');
@@ -59,7 +57,7 @@ const addEmployee = (first, last, role, manager, callback) => {
         },
         (err) => {
             if (err) throw err;
-            console.log(`Added ${first} ${last} to the database.`);
+            console.log(`\nAdded ${first} ${last} to the database.\n`);
             callback();
         }
     );
@@ -82,7 +80,7 @@ const addRole = (title, salary, dept, callback) => {
         },
         (err) => {
             if (err) throw err;
-            console.log(`Added Role: ${title} to the database.`);
+            console.log(`\nAdded Role: ${title} to the database.\n`);
             callback();
         }
     );
@@ -94,24 +92,34 @@ const addDepartment = (name, callback) => {
         { name: name },
         (err) => {
             if (err) throw err;
-            console.log(`Added Department: ${name} to the database.`);
+            console.log(`\nAdded Department: ${name} to the database.\n`);
             callback();
         }
     );
 }
-
+// Get data about roles and employees to select when updating a role
 const getEmployeeUpdate = (callback) => {
     connection.query("SELECT CONCAT(first_name, ' ', last_name) as 'name', id as 'value' FROM employee", (err, employeesArray) => {
         if (err) throw err;
-    connection.query("SELECT title as 'name', id as 'value' FROM role", (err, rolesArray) => {
-        if (err) throw err;
-        console.log(rolesArray);
-        callback(employeesArray, rolesArray);
+        connection.query("SELECT title as 'name', id as 'value' FROM role", (err, rolesArray) => {
+            if (err) throw err;
+            console.log(rolesArray);
+            callback(employeesArray, rolesArray);
+        });
     });
-});
-
 }
-
+// Update employee role using inquirer data
+const changeRole = (employee, role, callback) => {
+    connection.query(
+        "UPDATE employee SET role_id = ? WHERE id = ?",
+        [ role, employee ],
+        (err) => {
+            if (err) throw err;
+            console.log(`\nUpdated employee's role in the database.\n`);
+            callback();
+        }
+    );
+}
 
 module.exports = {
     showAllEmployees,
@@ -122,5 +130,6 @@ module.exports = {
     getRoleInfo,
     addRole,
     addDepartment,
-    getEmployeeUpdate
+    getEmployeeUpdate,
+    changeRole
 }
