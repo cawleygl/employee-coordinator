@@ -103,7 +103,6 @@ const getEmployeeUpdate = (callback) => {
         if (err) throw err;
         connection.query("SELECT title as 'name', id as 'value' FROM role", (err, rolesArray) => {
             if (err) throw err;
-            console.log(rolesArray);
             callback(employeesArray, rolesArray);
         });
     });
